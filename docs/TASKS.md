@@ -11,7 +11,7 @@ Each task is built on its own branch `task/NN-slug`, tested, squash-merged into 
 | 05 | Store interface + in-memory store | `store/base.py`, `store/memory.py` | 02 | exact get, top-k search sorted by score, scope filter, expiry ignored, invalidate by scope/namespace/id, purge | tests and eval need a fast store |
 | 06 | PgVector store | `store/pgvector.py`, `store/schema.sql` | 05 | same contract tests as 05 pass against Docker Postgres (`-m db`); HNSW index exists | production storage |
 | 07 | Guards | `guards.py`, `tests/test_guard_*.py` | 03 | one test file per guard incl. seed traps; swap vs strict entity mode | catches what embeddings blur |
-| 08 | Cache engine | `cache.py`, `decision.py` | 03–05, 07 | L1, L2, thresholds, top-k fallback past a guard reject, cross-namespace isolation test at L1 and L2, fail-open on embed/store errors | the core product |
+| 08 | Cache engine (built together with 09-11: they share `cache.py`) | `cache.py`, `decision.py` | 03–05, 07 | L1, L2, thresholds, top-k fallback past a guard reject, cross-namespace isolation test at L1 and L2, fail-open on embed/store errors | the core product |
 | 09 | Upstream, single-flight, streaming | `upstream.py`, `singleflight.py`, `cache.py` | 08 | 50 concurrent identical requests → 1 upstream call; hit streams replay; miss stream stored only on clean stop | stampede protection and real-time UX |
 | 10 | Verifier | `verify.py` | 08 | YES/NO parsing fail-safe; verdict memo; off switch; grey-zone path in engine | measured, optional extra precision |
 | 11 | Metrics, logs, cost | `metrics.py`, `logs.py` | 08 | one JSON line per request; Prometheus text has all series; saved minus embedding cost | the numbers a platform team reads |

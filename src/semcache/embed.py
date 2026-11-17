@@ -95,18 +95,22 @@ class TitanEmbedder:
             self.budget.check(cost_usd(self.model_id, max(1, len(text) // 3)))
         body = json.dumps({"inputText": text, "dimensions": self.dimensions, "normalize": True})
 
+        timing = {}
+
         def call():
-            self.pacer.wait()
-            return self.client.invoke_model(
+            self.pacer.wait()  # waiting for a quota slot is not part of the call's latency
+            start = time.perf_counter()
+            r = self.client.invoke_model(
                 modelId=self.model_id,
                 body=body,
                 contentType="application/json",
                 accept="application/json",
             )
+            timing["ms"] = (time.perf_counter() - start) * 1000
+            return r
 
-        start = time.perf_counter()
         response = with_retries(call, sleep=self.sleep)
-        latency_ms = (time.perf_counter() - start) * 1000
+        latency_ms = timing["ms"]
         payload = json.loads(response["body"].read())
         tokens = int(payload.get("inputTextTokenCount", 0))
         cost = cost_usd(self.model_id, tokens)

@@ -99,6 +99,9 @@ class ChatResponse(BaseModel):
     skip_reason: str | None = None
     guard: str | None = None  # which guard rejected the best candidate, if any
     coalesced: bool = False  # answered by waiting for an identical in-flight request
+    overhead_usd: float = 0.0  # the part of cost_usd spent on the cache itself (embed + judge)
+    # Component latencies in ms: embed, search, judge, upstream (used by the simulation).
+    timings: dict[str, float] = Field(default_factory=dict)
 
 
 @dataclass
