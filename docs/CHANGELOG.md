@@ -7,3 +7,4 @@ One line per merged task.
 - 2026-11-17 · Task 04 · Titan v2 embedder, SQLite embedding memo, live budget cap, Bedrock client
 - 2026-11-17 · Task 05 · CacheStore protocol, numpy InMemoryStore, shared contract tests
 - 2026-11-17 · Task 06 · PgVectorStore: per-dimension table, HNSW cosine index, scoped search, upsert, expiry
+- 2026-11-17 · Task 07 · Numbers, dates, negation and entity guards with one test file each
