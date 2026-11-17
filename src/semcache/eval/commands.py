@@ -127,7 +127,76 @@ def cmd_test(args) -> int:
     return 0
 
 
+def cmd_calibrate(args) -> int:
+    from semcache.config import get_settings
+    from semcache.eval.calibrate import calibrate, summarise
+    from semcache.eval.report import write_json
+    from semcache.eval.runtime import budget, live_client
+    from semcache.upstream import BedrockUpstream
+
+    if not args.live:
+        print("calibration makes real Bedrock calls: pass --live to confirm")
+        return 1
+    s = get_settings()
+    cal = calibrate(BedrockUpstream(live_client(s), budget=budget(s)), s.bedrock_chat_model_id,
+                    n=args.n)  # fmt: skip
+    cal["summary"] = summarise(cal)
+    write_json("calibration.json", cal)
+    print(json.dumps(cal["summary"], indent=2))
+    return 0
+
+
+def cmd_simulate(args) -> int:
+    from semcache.eval.calibrate import summarise
+    from semcache.eval.runtime import memo_embedder, memo_verifier
+    from semcache.eval.traffic import run_simulation, write_simulation_report
+
+    op = json.loads(Path("reports/operating_point.json").read_text(encoding="utf-8"))
+    cal = json.loads(Path("reports/calibration.json").read_text(encoding="utf-8"))
+    res = run_simulation(
+        memo_embedder(op["embed_dim"], live=args.live), op, cal["samples"],
+        memo_verifier(live=args.live),
+    )  # fmt: skip
+    summary = summarise(cal)  # fresh: the memo may hold more embedding calls by now
+    write_simulation_report(res, summary)
+    for r in res["results"]:
+        print(f"{r['config']:<30} hit {r['hit_rate']:.3f}  false {r['false_hits']:>3}  "
+              f"usd {r['usd_total']:.4f}  p50 {r['latency_ms_p50']} ms")  # fmt: skip
+    return 0
+
+
+def cmd_eval(args) -> int:
+    """Regenerate every report from the memos (free and repeatable), then sync the README."""
+    for step in (cmd_sweep, cmd_test, cmd_simulate):
+        code = step(args)
+        if code:
+            return code
+    try:
+        from semcache.eval.readme_sync import sync_readme
+    except ImportError:
+        return 0
+    sync_readme()
+    print("README results updated from reports/")
+    return 0
+
+
 def register(sub) -> None:
+    p = sub.add_parser(
+        "calibrate", help="measure real Nova 2 Lite latency and tokens (<= 50 calls)"
+    )
+    p.add_argument("--live", action="store_true")
+    p.add_argument("-n", type=int, default=40)
+    p.set_defaults(func=cmd_calibrate)
+
+    p = sub.add_parser("simulate", help="replay a synthetic day of traffic against 5 configs")
+    p.add_argument("--live", action="store_true", help="allowed to call the judge model")
+    p.set_defaults(func=cmd_simulate)
+
+    p = sub.add_parser("eval", help="regenerate all reports from the memos, then the README")
+    p.add_argument("--live", action="store_true")
+    p.add_argument("--new-operating-point", action="store_true")
+    p.set_defaults(func=cmd_eval)
+
     p = sub.add_parser("sweep", help="dev split: sweep, dimension, ablation, verifier")
     p.add_argument("--live", action="store_true", help="allowed to call Bedrock")
     p.set_defaults(func=cmd_sweep)

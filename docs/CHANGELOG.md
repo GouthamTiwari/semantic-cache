@@ -12,3 +12,4 @@ One line per merged task.
 - 2026-11-17 · Task 12 · FastAPI service (chat, SSE, metrics, health, admin), semcache serve/purge CLI
 - 2026-11-17 · Task 13 · Labelled pair dataset (622), generators, review tooling, traffic intents
 - 2026-11-17 · Task 14 · Threshold sweep, dimension rule, guard ablation, verifier eval, test-split runner, SVG charts
+- 2026-11-17 · Task 15 · Live calibration (40 Nova calls) and 5-config traffic simulation through the real engine
