@@ -11,3 +11,4 @@ One line per merged task.
 - 2026-11-17 · Task 08 · Cache engine, Bedrock/mock upstream, single-flight, streaming, grey-zone verifier, metrics and JSON logs (tasks 08-11)
 - 2026-11-17 · Task 12 · FastAPI service (chat, SSE, metrics, health, admin), semcache serve/purge CLI
 - 2026-11-17 · Task 13 · Labelled pair dataset (622), generators, review tooling, traffic intents
+- 2026-11-17 · Task 14 · Threshold sweep, dimension rule, guard ablation, verifier eval, test-split runner, SVG charts

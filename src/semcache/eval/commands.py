@@ -93,7 +93,50 @@ def cmd_embed_memo(args) -> int:
     return 0
 
 
+def cmd_sweep(args) -> int:
+    from semcache.eval.pairs_eval import DIMS, run_dev, write_dev_reports
+    from semcache.eval.runtime import memo_embedder, memo_verifier
+
+    embedders = {d: memo_embedder(d, live=args.live) for d in DIMS}
+    result = run_dev(embedders, memo_verifier(live=args.live))
+    write_dev_reports(result)
+    print(json.dumps(result["operating_point"], indent=2))
+    print("wrote reports/pairs_dev.{json,md}, reports/operating_point.json, reports/sweep_*.svg")
+    return 0
+
+
+def cmd_test(args) -> int:
+    from semcache.eval.pairs_eval import op_hash, run_test, write_test_report
+    from semcache.eval.runtime import memo_embedder, memo_verifier
+
+    op = json.loads(Path("reports/operating_point.json").read_text(encoding="utf-8"))
+    previous = Path("reports/pairs_test.json")
+    if previous.exists() and not args.new_operating_point:
+        old = json.loads(previous.read_text(encoding="utf-8"))["operating_point_hash"]
+        if old != op_hash(op):
+            # The test split is reported once. A changed operating point after seeing test
+            # results would be tuning on test, so it needs an explicit, visible flag.
+            print("operating point changed since the last test run; refusing to re-test.")
+            print("If this is a deliberate new experiment, pass --new-operating-point.")
+            return 1
+    res = run_test(
+        memo_embedder(op["embed_dim"], live=args.live), memo_verifier(live=args.live), op
+    )
+    write_test_report(res)
+    print(json.dumps(res["result"] | {"by_category": "see reports/pairs_test.md"}, indent=2))
+    return 0
+
+
 def register(sub) -> None:
+    p = sub.add_parser("sweep", help="dev split: sweep, dimension, ablation, verifier")
+    p.add_argument("--live", action="store_true", help="allowed to call Bedrock")
+    p.set_defaults(func=cmd_sweep)
+
+    p = sub.add_parser("test", help="held-out test split at the frozen operating point")
+    p.add_argument("--live", action="store_true", help="allowed to call Bedrock")
+    p.add_argument("--new-operating-point", action="store_true")
+    p.set_defaults(func=cmd_test)
+
     p = sub.add_parser("dataset", help="build, check and review the labelled pair dataset")
     p.add_argument("action", choices=["generate", "validate", "review-sample", "apply-review"])
     p.set_defaults(func=cmd_dataset)
