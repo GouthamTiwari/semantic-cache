@@ -43,6 +43,10 @@ src = ["src", "tests"]
 # E/F: real errors, I: import order, UP: modern Python syntax, B: common bug patterns.
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+# Prompt templates read better unwrapped.
+"src/semcache/eval/generate.py" = ["E501"]
+
 [tool.ruff.format]
 exclude = ["*.md"]
 

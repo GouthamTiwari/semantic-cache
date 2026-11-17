@@ -1,0 +1,21 @@
+{
+  "reviewer": "assistant review pass (every generated pair read once), 2026-11-17",
+  "fixes": {
+    "p0054": {"label": "different", "note": "'non-refundable?' vs 'can be refunded?' invert the yes/no answer"},
+    "p0098": {"label": "different", "note": "'not applicable' vs 'can it be avoided' ask different things"},
+    "p0126": {"label": "same", "note": "'link without income proof?' and 'need income proof to link?' need the same answer"},
+    "p0138": {"category": "entity_swap", "note": "savings vs salary account is an entity swap, no number differs"},
+    "p0140": {"label": "different", "note": "Rs 10 lakh is 1,000,000, not Rs 100000"},
+    "p0201": {"label": "same", "note": "'any fees' vs 'fees' is not a negation; same question"},
+    "p0218": {"label": "different", "note": "'allowed?' vs 'prohibited?' invert the yes/no answer"},
+    "p0378": {"drop": true, "note": "'this product' vs 'that product' is ambiguous"},
+    "p0380": {"drop": true, "note": "garbled ('2 years or two years' vs 'II years')"},
+    "p0428": {"drop": true, "note": "'are there non-refundable codes' vs 'can I get a refund' is ambiguous"},
+    "p0484": {"drop": true, "note": "garbled ('in 2020 million')"},
+    "p0505": {"drop": true, "note": "US and UK pounds (mass) are the same unit, so the label is wrong either way"},
+    "p0530": {"drop": true, "note": "garbled ('seventy-seven and seventy-six combined')"},
+    "p0561": {"label": "same", "note": "'freeze without spoiling' and 'freeze and not spoil' mean the same"},
+    "p0578": {"label": "different", "note": "'do I need a visa?' vs 'is a visa not required?' invert the yes/no answer"},
+    "p0608": {"drop": true, "note": "garbled ('can't offside be allowed')"}
+  }
+}
