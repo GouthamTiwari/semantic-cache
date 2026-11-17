@@ -1,4 +1,6 @@
-# Postgres 16 + pgvector for the semantic cache.
+# Postgres 16 + pgvector for the semantic cache, plus the optional API service.
+#   docker compose up -d                     -> database only (for tests and local runs)
+#   docker compose --profile app up -d       -> database + API on http://127.0.0.1:8000
 # Host port 5434, so it does not clash with other local Postgres containers on 5432/5433.
 services:
   db:
@@ -18,5 +20,21 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  app:
+    profiles: ["app"]
+    build: .
+    container_name: semcache-app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://semcache:semcache_dev_only@db:5432/semcache
+    ports:
+      - "127.0.0.1:8000:8000"
+
 volumes:
   semcache_pgdata:

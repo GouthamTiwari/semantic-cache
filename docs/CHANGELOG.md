@@ -14,3 +14,4 @@ One line per merged task.
 - 2026-11-17 · Task 14 · Threshold sweep, dimension rule, guard ablation, verifier eval, test-split runner, SVG charts
 - 2026-11-17 · Task 15 · Live calibration (40 Nova calls) and 5-config traffic simulation through the real engine
 - 2026-11-17 · Task 17 · FunctionUpstream + RAG adapter example; 'current' now time-sensitive (except current account)
+- 2026-11-17 · Task 18 · Dockerfile, compose app profile, GitHub Actions CI with a pgvector service
