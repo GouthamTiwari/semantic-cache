@@ -1,0 +1,28 @@
+# secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+*.egg-info/
+
+# project data (never commit)
+data/raw/
+.embed_cache/
+
+# the original project kit (private notes, kept locally for reference)
+_kit/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,30 @@
+{"id": "seed001", "a": "What is the repo rate?", "b": "Can you tell me what the repo rate is?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed002", "a": "How do I file a GST return?", "b": "What are the steps to submit a GST return?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed003", "a": "What does KYC stand for?", "b": "KYC full form?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed004", "a": "How can I reset my password?", "b": "I forgot my password, how do I change it?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed005", "a": "How long does a refund take to process?", "b": "How many days until my refund is processed?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed006", "a": "What is the due date for GSTR-3B?", "b": "When is GSTR-3B due?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed007", "a": "How do I download my bank statement?", "b": "Where can I get a copy of my account statement?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed008", "a": "What is the late fee for filing a GST return after the due date?", "b": "How much is charged if I file my GST return late?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed009", "a": "What is an NPA?", "b": "What does non-performing asset mean?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed010", "a": "What is the minimum balance for a savings account?", "b": "How much minimum balance must a savings account hold?", "label": "same", "category": "paraphrase", "split": "dev"}
+{"id": "seed011", "a": "Can I return an item within 7 days of purchase?", "b": "Can I return an item within 30 days of purchase?", "label": "different", "category": "near_miss_number", "split": "dev"}
+{"id": "seed012", "a": "Which goods fall under the 5% GST slab?", "b": "Which goods fall under the 18% GST slab?", "label": "different", "category": "near_miss_number", "split": "dev"}
+{"id": "seed013", "a": "What is the penalty for filing GSTR-3B 10 days late?", "b": "What is the penalty for filing GSTR-3B 60 days late?", "label": "different", "category": "near_miss_number", "split": "dev"}
+{"id": "seed014", "a": "Is a UPI payment of Rs 1 lakh allowed?", "b": "Is a UPI payment of Rs 5 lakh allowed?", "label": "different", "category": "near_miss_number", "split": "dev"}
+{"id": "seed015", "a": "What was the rule for TDS on rent in 2019?", "b": "What was the rule for TDS on rent in 2023?", "label": "different", "category": "near_miss_number", "split": "dev"}
+{"id": "seed016", "a": "Which purchases are eligible for input tax credit?", "b": "Which purchases are not eligible for input tax credit?", "label": "different", "category": "negation", "split": "dev"}
+{"id": "seed017", "a": "What transactions are exempt from GST?", "b": "What transactions are not exempt from GST?", "label": "different", "category": "negation", "split": "dev"}
+{"id": "seed018", "a": "When is a bank allowed to freeze an account?", "b": "When is a bank not allowed to freeze an account?", "label": "different", "category": "negation", "split": "dev"}
+{"id": "seed019", "a": "Which payments are subject to TDS?", "b": "Which payments are not subject to TDS?", "label": "different", "category": "negation", "split": "dev"}
+{"id": "seed020", "a": "What is the GST rate on restaurants?", "b": "What is the GST rate on hotels?", "label": "different", "category": "entity_swap", "split": "dev"}
+{"id": "seed021", "a": "What does RBI say about digital lending?", "b": "What does SEBI say about digital lending?", "label": "different", "category": "entity_swap", "split": "dev"}
+{"id": "seed022", "a": "How do I update my address on my Aadhaar?", "b": "How do I update my address on my PAN?", "label": "different", "category": "entity_swap", "split": "dev"}
+{"id": "seed023", "a": "What is the interest rate on a home loan?", "b": "What is the interest rate on a car loan?", "label": "different", "category": "entity_swap", "split": "dev"}
+{"id": "seed024", "a": "How do I track my order on the Android app?", "b": "How do I track my order on the iPhone app?", "label": "different", "category": "entity_swap", "split": "dev"}
+{"id": "seed025", "a": "How do I file a GST return?", "b": "How do I revise a GST return after filing?", "label": "different", "category": "same_topic_different_question", "split": "dev"}
+{"id": "seed026", "a": "What is the repo rate?", "b": "How does the repo rate affect my loan EMI?", "label": "different", "category": "same_topic_different_question", "split": "dev"}
+{"id": "seed027", "a": "What is KYC?", "b": "How do I complete KYC online?", "label": "different", "category": "same_topic_different_question", "split": "dev"}
+{"id": "seed028", "a": "How do I reset my password?", "b": "How do I choose a strong password?", "label": "different", "category": "same_topic_different_question", "split": "dev"}
+{"id": "seed029", "a": "What is input tax credit?", "b": "How do I reverse input tax credit?", "label": "different", "category": "same_topic_different_question", "split": "dev"}
+{"id": "seed030", "a": "How long does a refund take?", "b": "Why was my refund rejected?", "label": "different", "category": "same_topic_different_question", "split": "dev"}
