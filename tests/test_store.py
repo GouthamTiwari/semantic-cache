@@ -1,5 +1,6 @@
 """Contract tests: every CacheStore backend must pass the same tests."""
 
+import os
 from datetime import timedelta
 
 import pytest
@@ -7,11 +8,45 @@ import pytest
 from helpers import NOW, make_entry, unit
 from semcache.store import InMemoryStore
 
+TEST_DSN = os.environ.get(
+    "TEST_DATABASE_URL", "postgresql://semcache:semcache_dev_only@127.0.0.1:5434/semcache"
+)
 
-@pytest.fixture(params=["memory"])
+
+@pytest.fixture(params=["memory", pytest.param("pgvector", marks=pytest.mark.db)])
 def store(request):
     if request.param == "memory":
         yield InMemoryStore()
+    else:
+        from semcache.store.pgvector import PgVectorStore
+
+        s = PgVectorStore(TEST_DSN, dim=8)
+        s.truncate()
+        yield s
+        s.truncate()
+        s.close()
+
+
+@pytest.mark.db
+def test_pgvector_has_hnsw_index():
+    from semcache.store.pgvector import PgVectorStore
+
+    s = PgVectorStore(TEST_DSN, dim=8)
+    rows = s._conn.execute(
+        "SELECT indexdef FROM pg_indexes WHERE tablename = 'semcache_entries_8'"
+    ).fetchall()
+    s.close()
+    assert any("hnsw" in r[0] and "vector_cosine_ops" in r[0] for r in rows)
+
+
+@pytest.mark.db
+def test_pgvector_rejects_wrong_dimension():
+    from semcache.store.pgvector import PgVectorStore
+
+    s = PgVectorStore(TEST_DSN, dim=8)
+    with pytest.raises(ValueError):
+        s.put(make_entry(dim=4, vector=unit(1, dim=4)))
+    s.close()
 
 
 def test_put_and_get_exact(store):
