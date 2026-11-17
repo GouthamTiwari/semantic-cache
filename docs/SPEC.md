@@ -111,7 +111,7 @@ The L1 key is `sha256(scope_key + "\n" + normalized_text)`. The embedding is com
 |---|---|---|---|
 | P1 | `no_cache` flag | request field is true | bypass |
 | P2 | tool traffic | any message has role `tool`, or the request carries `tools` and the model returns tool use | bypass |
-| P3 | time-sensitive | last user message matches `today, now, tonight, tomorrow, yesterday, latest, current price, right now, this week, live, at the moment, currently` (word-boundary match) | bypass, **unless** the namespace allows the `volatile` TTL class; then cache with 15-minute TTL |
+| P3 | time-sensitive | last user message matches `today, now, tonight, tomorrow, yesterday, latest, right now, this week, live, at the moment, currently, current` (word-boundary match; `current account` is excluded because it is a bank product) | bypass, **unless** the namespace allows the `volatile` TTL class; then cache with 15-minute TTL |
 | P4 | upstream refused or failed | exception, empty text, `stopReason` not `end_turn` (for example `max_tokens`, `guardrail_intervened`, `content_filtered`, `tool_use`) | do not store |
 | P5 | PII-looking content | question or answer contains an email address, a phone number (Indian 10-digit mobile or `+` international), or a run of 9+ digits (spaces/hyphens allowed inside) | do not store; `semcache_pii_skipped_total` + 1 |
 | P6 | stream not finished | client disconnected or stream ended without a clean stop | do not store |

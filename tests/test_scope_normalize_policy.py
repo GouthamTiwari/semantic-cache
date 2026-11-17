@@ -119,6 +119,11 @@ def test_p3_time_sensitive_uses_volatile_ttl_when_allowed():
     assert p.use_cache and p.ttl_class is TTLClass.VOLATILE
 
 
+def test_p3_current_but_not_current_account():
+    assert not request_policy(req("What is the current repo rate?"), NamespaceConfig()).use_cache
+    assert request_policy(req("How do I open a current account?"), NamespaceConfig()).use_cache
+
+
 def test_p3_does_not_match_inside_words():
     # "know" contains "now", "delivery" contains "live": no false positives
     assert request_policy(req("Do you know the delivery charges?"), NamespaceConfig()).use_cache

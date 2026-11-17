@@ -182,3 +182,34 @@ class MockUpstream:
         for i, w in enumerate(words):
             yield w if i == 0 else " " + w
         yield result
+
+
+class FunctionUpstream:
+    """Put the cache in front of any Python function that answers a question.
+
+    `fn(question) -> str` or `fn(question) -> (text, input_tokens, output_tokens)`. Use it
+    to cache a whole RAG pipeline: retrieval and generation are skipped on a hit. Token
+    counts let the cache report what each hit saved; without them savings show as $0.
+    """
+
+    def __init__(self, fn: Callable, *, model_id: str = "mock-upstream"):
+        self.fn = fn
+        self.model_id = model_id
+
+    def complete(self, request: ChatRequest, model_id: str) -> UpstreamResult:
+        start = time.perf_counter()
+        out = self.fn(request.question)
+        text, tin, tout = (out, 0, 0) if isinstance(out, str) else out
+        return UpstreamResult(
+            text=text,
+            stop_reason="end_turn",
+            input_tokens=int(tin),
+            output_tokens=int(tout),
+            latency_ms=(time.perf_counter() - start) * 1000,
+            model_id=self.model_id,
+        )
+
+    def stream(self, request: ChatRequest, model_id: str) -> Iterator[str | UpstreamResult]:
+        result = self.complete(request, model_id)
+        yield result.text
+        yield result

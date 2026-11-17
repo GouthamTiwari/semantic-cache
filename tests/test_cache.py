@@ -69,9 +69,9 @@ def test_miss_then_exact_hit():
 
 
 def test_paraphrase_semantic_hit():
-    cache = make_cache({"What is the repo rate?": (1, 0), "Current repo rate?": (1, 0.05)})
+    cache = make_cache({"What is the repo rate?": (1, 0), "Tell me the repo rate": (1, 0.05)})
     cache.get_or_call(req("What is the repo rate?"))
-    r = cache.get_or_call(req("Current repo rate?"))
+    r = cache.get_or_call(req("Tell me the repo rate"))
     assert r.decision is Decision.SEMANTIC_HIT
     assert r.score > 0.95
     assert cache.upstream.calls == 1
@@ -113,11 +113,11 @@ def test_top_k_falls_back_past_a_guard_reject():
 
 
 def test_cross_namespace_isolation_l1_and_l2():
-    cache = make_cache({"What is the repo rate?": (1, 0), "Current repo rate?": (1, 0.01)})
+    cache = make_cache({"What is the repo rate?": (1, 0), "Tell me the repo rate": (1, 0.01)})
     cache.get_or_call(req("What is the repo rate?", namespace="tenant-a"))
     # identical text (L1) and paraphrase (L2) from another tenant: both must miss
     r1 = cache.get_or_call(req("What is the repo rate?", namespace="tenant-b"))
-    r2 = cache.get_or_call(req("Current repo rate?", namespace="tenant-c"))
+    r2 = cache.get_or_call(req("Tell me the repo rate", namespace="tenant-c"))
     assert r1.decision is Decision.MISS and r2.decision is Decision.MISS
     assert cache.upstream.calls == 3
 
@@ -237,9 +237,9 @@ def test_store_failure_fails_open():
 
 
 def test_hit_saves_the_stored_call_cost_minus_embedding():
-    cache = make_cache({"What is the repo rate?": (1, 0), "Current repo rate?": (1, 0.05)})
+    cache = make_cache({"What is the repo rate?": (1, 0), "Tell me the repo rate": (1, 0.05)})
     miss = cache.get_or_call(req("What is the repo rate?"))
-    hit = cache.get_or_call(req("Current repo rate?"))
+    hit = cache.get_or_call(req("Tell me the repo rate"))
     upstream_cost = 40 * 0.35 / 1e6 + 200 * 2.95 / 1e6
     embed_cost = 5 * 0.024 / 1e6
     assert miss.cost_usd == pytest.approx(upstream_cost + embed_cost)

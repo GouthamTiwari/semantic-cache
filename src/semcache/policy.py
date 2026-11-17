@@ -13,8 +13,9 @@ from semcache.config import NamespaceConfig
 from semcache.types import ChatRequest, TTLClass
 
 TIME_SENSITIVE_RE = re.compile(
-    r"\b(today|now|tonight|tomorrow|yesterday|latest|current price|right now|this week|"
-    r"live|at the moment|currently)\b",
+    r"\b(today|now|tonight|tomorrow|yesterday|latest|right now|this week|live|at the moment|"
+    # "current account" is a bank product, not a point in time
+    r"currently|current(?!\s+accounts?\b))\b",
     re.IGNORECASE,
 )
 
