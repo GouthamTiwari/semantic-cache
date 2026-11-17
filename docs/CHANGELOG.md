@@ -9,3 +9,4 @@ One line per merged task.
 - 2026-11-17 · Task 06 · PgVectorStore: per-dimension table, HNSW cosine index, scoped search, upsert, expiry
 - 2026-11-17 · Task 07 · Numbers, dates, negation and entity guards with one test file each
 - 2026-11-17 · Task 08 · Cache engine, Bedrock/mock upstream, single-flight, streaming, grey-zone verifier, metrics and JSON logs (tasks 08-11)
+- 2026-11-17 · Task 12 · FastAPI service (chat, SSE, metrics, health, admin), semcache serve/purge CLI

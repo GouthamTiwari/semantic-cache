@@ -49,6 +49,7 @@ exclude = ["*.md"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Plain `uv run pytest` must be free and need no Docker, so the two costly groups are opt-in.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
 addopts = '-m "not live and not db"'
 markers = [
     "live: calls real Amazon Bedrock, costs money",
