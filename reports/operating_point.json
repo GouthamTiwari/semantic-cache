@@ -1,13 +1,14 @@
 {
-  "embed_dim": 256,
-  "t_high": 0.95,
-  "t_low": 0.95,
-  "verifier_enabled": false,
+  "embed_dim": 1024,
+  "t_high": 0.94,
+  "t_low": 0.84,
+  "verifier_enabled": true,
   "guards": [
     "numbers",
     "dates",
     "negation",
-    "entities"
+    "entities",
+    "relation"
   ],
   "entity_mode": "swap",
   "fhr_target": 0.01,

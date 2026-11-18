@@ -20,11 +20,16 @@ def _load(name: str) -> dict:
     return json.loads((Path("reports") / name).read_text(encoding="utf-8"))
 
 
+def _answers(n: int) -> str:
+    return f"{n} wrong answer{'' if n == 1 else 's'}"
+
+
 def _headline(dev: dict, test: dict, sim: dict) -> str:
     op = test["operating_point"]
     m = test["result"]
     recommended = _recommended(sim, op)
     exact = next(r for r in sim["results"] if r["config"] == "exact only")
+    guards_only = next(r for r in sim["results"] if r["config"] == "semantic + guards")
     no_guards = test["same_threshold_without_guards"]
     ci = test["false_hit_rate_ci95"]
     lines = [
@@ -35,15 +40,23 @@ def _headline(dev: dict, test: dict, sim: dict) -> str:
         f"- **Same threshold without guards: {pct(no_guards['false_hit_rate'])} false hits** "
         "on the same test pairs.",
         f"- **Traffic simulation ({sim['stream']['requests']} requests):** exact match alone "
-        f"saves {pct(exact['net_saving_pct'])} of LLM spend; semantic + guards saves "
-        f"{pct(recommended['net_saving_pct'])} after paying for embeddings, but serves "
-        f"{recommended['false_hits']} wrong answers "
+        f"saves {pct(exact['net_saving_pct'])} of LLM spend. With the chosen settings "
+        f"({recommended['config']}) the cache saves {pct(recommended['net_saving_pct'])} after "
+        f"paying for embeddings and judge calls, with {_answers(recommended['false_hits'])} "
         f"({pct(recommended['false_hits'] / sim['stream']['requests'])} of requests).",
-        f"- **Latency:** hit p50 {recommended['hit_latency_ms_p50']} ms vs miss p50 "
-        f"{recommended['miss_latency_ms_p50']} ms (p95 {recommended['hit_latency_ms_p95']} ms vs "
-        f"{recommended['miss_latency_ms_p95']} ms).",
+    ]
+    if recommended is not guards_only:
+        lines.append(
+            f"- **Without the verifier** (guards only): {pct(guards_only['net_saving_pct'])} "
+            f"saved, {_answers(guards_only['false_hits'])}, hit p95 "
+            f"{guards_only['hit_latency_ms_p95']} ms. The verifier buys extra hits but each "
+            f"verified hit waits for a judge call (hit p95 {recommended['hit_latency_ms_p95']} ms)."
+        )
+    lines += [
+        f"- **Latency (chosen settings):** hit p50 {recommended['hit_latency_ms_p50']} ms vs miss "
+        f"p50 {recommended['miss_latency_ms_p50']} ms.",
         f"- Operating point chosen on the dev split only: Titan v2 at {op['embed_dim']} dims, "
-        f"threshold {op['t_high']}, all four guards, verifier "
+        f"threshold {op['t_high']}, all {len(op['guards'])} guards, verifier "
         f"{'on (grey zone from ' + str(op['t_low']) + ')' if op['verifier_enabled'] else 'off'}.",
     ]
     return "\n".join(lines)
@@ -160,6 +173,32 @@ def _simulation(sim: dict) -> str:
     )
 
 
+def _versions(test: dict, sim: dict) -> str:
+    """v1 vs v2 side by side, from reports/v1/ (frozen at tag v1.0.0) and reports/."""
+    v1_dir = Path("reports") / "v1"
+    if not (v1_dir / "pairs_test.json").exists():
+        return "No v1 reports found."
+    t1 = json.loads((v1_dir / "pairs_test.json").read_text(encoding="utf-8"))
+    s1 = json.loads((v1_dir / "simulation.json").read_text(encoding="utf-8"))
+    r1, r2 = _recommended(s1, t1["operating_point"]), _recommended(sim, test["operating_point"])
+
+    def row(name, t, r):
+        m, op, ci = t["result"], t["operating_point"], t.get("false_hit_rate_ci95")
+        ci_text = f" ({pct(ci[0])}-{pct(ci[1])})" if ci else ""
+        return [
+            name, len(op["guards"]), op["t_high"], op["embed_dim"],
+            f"{t['pairs']} pairs, {t['different']} should-miss",
+            pct(m["false_hit_rate"]) + ci_text, pct(m["precision"]), pct(m["recall"]),
+            r["false_hits"], pct(r["net_saving_pct"]),
+        ]  # fmt: skip
+
+    return table(
+        ["version", "guards", "threshold", "dims", "test set", "test false-hit rate (95 % CI)",
+         "test precision", "test recall", "simulation wrong answers", "simulation saving"],
+        [row("v1 (tag v1.0.0)", t1, r1), row("v2", test, r2)],
+    )  # fmt: skip
+
+
 def blocks() -> dict[str, str]:
     dev, test, sim = _load("pairs_dev.json"), _load("pairs_test.json"), _load("simulation.json")
     dim = test["operating_point"]["embed_dim"]
@@ -171,6 +210,7 @@ def blocks() -> dict[str, str]:
         "ablation": _ablation(dev),
         "verifier": _verifier(dev),
         "simulation": _simulation(sim),
+        "versions": _versions(test, sim),
     }
 
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from collections.abc import Callable
+from dataclasses import dataclass
 
 # --- numbers ----------------------------------------------------------------------
 
@@ -131,7 +132,12 @@ _NEGATION_RE = re.compile(
     r"\b(?:not|no|never|cannot|without|nor|neither|none|nothing|nobody)\b|n't\b|\bcant\b|\bwont\b"
     r"|\bdont\b|\bdoesnt\b|\bisnt\b|\barent\b|\bdidnt\b"
     # v2: "Is it false that ...?" asks the opposite question (found by the v1 simulation).
-    r"|\b(?:false|untrue)\s+that\b",
+    r"|\b(?:false|untrue)\s+that\b"
+    # v2: opposite-prefix words carry a negation without "not" ("possible" vs "impossible",
+    # "allowed" vs "prohibited"); "non-refundable" now agrees with "not refundable".
+    r"|\bnon-?[a-z]{3,}\b"
+    r"|\b(?:impossible|unsafe|prohibited|forbidden|banned|disallowed|ineligible|invalid"
+    r"|illegal|unlawful|unavailable|unable|unauthori[sz]ed)\b",
     re.IGNORECASE,
 )
 
@@ -241,20 +247,72 @@ _AXIS_RE = {
     for axis, (up, down, strict) in _AXES.items()
 }
 
-# Antonym comparatives map to one canonical word with the sides swapped:
-# "A younger than B" means the same as "B older than A".
+# Antonym comparatives map to one canonical word: "A younger than B" means the same as
+# "B older than A", so an antonym on the other side must come with swapped sides.
 _ANTONYM = {
     "younger": "older", "smaller": "bigger", "larger": "bigger", "lower": "higher",
     "slower": "faster", "costlier": "cheaper", "worse": "better", "shorter": "longer",
     "lighter": "heavier", "later": "earlier", "less": "more", "fewer": "more",
+    "lesser": "greater",
 }  # fmt: skip
 _SWAPS_SIDES = {"younger", "smaller", "lower", "slower", "costlier", "worse", "shorter",
-                "lighter", "later", "less", "fewer"}  # fmt: skip
-_COMPARISON_RE = re.compile(
-    r"\b([a-z0-9-]+)\s+(?:is\s+|are\s+|was\s+|were\s+)?((?:more|less)\s+[a-z]+|[a-z]+er)"
-    r"\s+than\s+(?:the\s+|a\s+|an\s+)?([a-z0-9-]+)",
-    re.IGNORECASE,
-)
+                "lighter", "later", "less", "fewer", "lesser"}  # fmt: skip
+_WORD_RE_REL = re.compile(r"[a-z0-9]+")
+_STOP = {
+    "is", "are", "was", "were", "be", "the", "a", "an", "of", "on", "in", "for", "to", "do",
+    "does", "did", "have", "has", "take", "takes", "it", "my", "i", "than", "and", "or",
+    "what", "which", "how", "can", "will", "would", "should", "there", "at", "by", "with",
+}  # fmt: skip
+# Bare level words, checked only when neither question has a "than" comparison:
+# "is the limit higher for emergencies?" vs "lower for emergencies?".
+_LEVEL_UP = {"higher", "greater", "bigger", "larger", "longer", "faster"}
+_LEVEL_DOWN = {"lower", "smaller", "shorter", "slower", "fewer", "lesser"}
+
+
+@dataclass(frozen=True)
+class Comparison:
+    canon: str  # canonical comparative, e.g. "older", "more expensive", "more moons"
+    orient: int  # -1 when the antonym form was used ("younger"), else 1
+    left: frozenset[str]  # content words before the comparative
+    right: frozenset[str]  # content words after "than"
+
+
+def comparison(text: str) -> Comparison | None:
+    """The first "A <comparative> than B" in the text, split into its two sides."""
+    toks = _WORD_RE_REL.findall(text.lower())
+    if "than" not in toks:
+        return None
+    i = toks.index("than")
+    if i == 0:
+        return None
+    word = toks[i - 1]
+    comp_start = i - 1
+    if (
+        word not in ("more", "less", "fewer")
+        and i >= 2
+        and toks[i - 2] in ("more", "less", "fewer")
+    ):
+        # "more expensive than", "more moons than": the next word carries the meaning
+        canon = f"more {word}"
+        orient = -1 if toks[i - 2] in ("less", "fewer") else 1
+        comp_start = i - 2
+    else:
+        canon = _ANTONYM.get(word, word)
+        orient = -1 if word in _SWAPS_SIDES else 1
+    left = frozenset(t for t in toks[:comp_start] if t not in _STOP)
+    right = frozenset(t for t in toks[i + 1 :] if t not in _STOP)
+    return Comparison(canon, orient, left, right)
+
+
+def comparison_conflict(a: str, b: str) -> bool:
+    """True when two comparisons say opposite things (sides swapped, or antonym in place)."""
+    ca, cb = comparison(a), comparison(b)
+    if ca is None or cb is None or ca.canon != cb.canon:
+        return False
+    only_a, only_b = ca.right - cb.right, cb.right - ca.right
+    swapped = bool(only_a and only_b and only_a <= cb.left and only_b <= ca.left)
+    antonym = ca.orient != cb.orient
+    return swapped != antonym
 
 
 def relation_signature(text: str) -> dict[str, set[int]]:
@@ -267,18 +325,9 @@ def relation_signature(text: str) -> dict[str, set[int]]:
     return out
 
 
-def comparisons(text: str) -> set[tuple[str, str, str]]:
-    """(left, canonical comparative, right) for every "A <comparative> than B"."""
-    out = set()
-    for m in _COMPARISON_RE.finditer(text.lower()):
-        left, comp, right = m.group(1), m.group(2), m.group(3)
-        parts = comp.split()
-        word, rest = parts[0], " ".join(parts[1:])
-        canon = _ANTONYM.get(word, word) + (f" {rest}" if rest else "")
-        if word in _SWAPS_SIDES:
-            left, right = right, left
-        out.add((left, canon, right))
-    return out
+def _level(text: str) -> set[int]:
+    toks = set(_WORD_RE_REL.findall(text.lower()))
+    return ({1} if toks & _LEVEL_UP else set()) | ({-1} if toks & _LEVEL_DOWN else set())
 
 
 def relation_guard(a: str, b: str) -> bool:
@@ -289,10 +338,13 @@ def relation_guard(a: str, b: str) -> bool:
             return False
         if not strict and x and y and x != y:
             return False
-    cb = comparisons(b)
-    return not any(
-        (right, comp, left) in cb and left != right for left, comp, right in comparisons(a)
-    )
+    if comparison_conflict(a, b):
+        return False
+    if comparison(a) is None and comparison(b) is None:
+        la, lb = _level(a), _level(b)
+        if la and lb and la != lb:
+            return False
+    return True
 
 
 # --- registry ---------------------------------------------------------------------

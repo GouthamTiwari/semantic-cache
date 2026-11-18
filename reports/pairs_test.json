@@ -1,82 +1,90 @@
 {
-  "operating_point_hash": "5cceaee13cea",
+  "operating_point_hash": "e55b98277738",
   "operating_point": {
-    "embed_dim": 256,
-    "t_high": 0.95,
-    "t_low": 0.95,
-    "verifier_enabled": false,
+    "embed_dim": 1024,
+    "t_high": 0.94,
+    "t_low": 0.84,
+    "verifier_enabled": true,
     "guards": [
       "numbers",
       "dates",
       "negation",
-      "entities"
+      "entities",
+      "relation"
     ],
     "entity_mode": "swap",
     "fhr_target": 0.01,
     "chosen_on": "dev split only"
   },
-  "pairs": 173,
-  "same": 80,
-  "different": 93,
+  "pairs": 272,
+  "same": 119,
+  "different": 153,
   "result": {
-    "tp": 20,
+    "tp": 74,
     "fp": 2,
-    "fn": 60,
-    "tn": 91,
-    "precision": 0.9091,
-    "recall": 0.25,
-    "false_hit_rate": 0.0215,
+    "fn": 45,
+    "tn": 151,
+    "precision": 0.9737,
+    "recall": 0.6218,
+    "false_hit_rate": 0.0131,
     "by_category": {
       "paraphrase": {
         "different": 0,
         "false_hits": 0,
         "false_hit_rate": null,
-        "same": 36,
-        "recall": 0.1667
+        "same": 48,
+        "recall": 0.625
       },
       "near_miss_number": {
-        "different": 22,
-        "false_hits": 1,
-        "false_hit_rate": 0.0455,
-        "same": 11,
-        "recall": 0.7273
+        "different": 31,
+        "false_hits": 0,
+        "false_hit_rate": 0.0,
+        "same": 12,
+        "recall": 0.75
       },
       "negation": {
-        "different": 25,
-        "false_hits": 1,
-        "false_hit_rate": 0.04,
-        "same": 9,
-        "recall": 0.1111
+        "different": 32,
+        "false_hits": 0,
+        "false_hit_rate": 0.0,
+        "same": 10,
+        "recall": 0.4
       },
       "entity_swap": {
-        "different": 23,
+        "different": 30,
         "false_hits": 0,
         "false_hit_rate": 0.0,
-        "same": 12,
-        "recall": 0.3333
+        "same": 16,
+        "recall": 0.3125
       },
       "same_topic_different_question": {
-        "different": 23,
+        "different": 32,
         "false_hits": 0,
         "false_hit_rate": 0.0,
-        "same": 12,
-        "recall": 0.0833
+        "same": 16,
+        "recall": 0.75
+      },
+      "relation": {
+        "different": 28,
+        "false_hits": 2,
+        "false_hit_rate": 0.0714,
+        "same": 17,
+        "recall": 0.8235
       }
     }
   },
   "false_hit_rate_ci95": [
-    0.0059,
-    0.0751
+    0.0036,
+    0.0464
   ],
   "judge": {
-    "judged": 0,
-    "judge_cost_usd": 0.0,
-    "judge_ms_p50": 0.0
+    "judged": 51,
+    "judge_cost_usd": 0.00295935,
+    "judge_ms_p50": 890.7
   },
   "same_threshold_without_guards": {
-    "false_hit_rate": 0.2043,
-    "recall": 0.3,
-    "precision": 0.5581,
-    "fp": 19
+    "false_hit_rate": 0.2549,
+    "recall": 0.2773,
+    "precision": 0.4583,
+    "fp": 39
   }
 }

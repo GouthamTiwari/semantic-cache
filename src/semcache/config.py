@@ -63,10 +63,10 @@ class NamespaceConfig:
 class CacheConfig:
     """Behaviour knobs. Threshold defaults come from the dev sweep (see module docstring)."""
 
-    t_high: float = 0.90
-    t_low: float = 0.85
+    t_high: float = 0.94  # = reports/operating_point.json (v2), checked by a test
+    t_low: float = 0.84
     top_k: int = 3
-    guards: tuple[str, ...] = ("numbers", "dates", "negation", "entities")
+    guards: tuple[str, ...] = ("numbers", "dates", "negation", "entities", "relation")
     entity_mode: str = "swap"  # "swap" or "strict" (SPEC section 7)
     verifier_enabled: bool = True
     singleflight_timeout_s: float = 30.0

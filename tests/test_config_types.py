@@ -83,3 +83,17 @@ def test_entry_expiry():
     )  # fmt: skip
     assert not e.is_expired(now)
     assert e.is_expired(now + timedelta(hours=1))
+
+
+def test_defaults_match_the_evaluated_operating_point():
+    # The numbers in the README describe CacheConfig(); this keeps them from drifting apart.
+    import json
+    from pathlib import Path
+
+    op = json.loads(Path("reports/operating_point.json").read_text(encoding="utf-8"))
+    cfg = CacheConfig()
+    assert (cfg.t_high, cfg.t_low) == (op["t_high"], op["t_low"])
+    assert list(cfg.guards) == op["guards"]
+    assert cfg.verifier_enabled == op["verifier_enabled"]
+    assert cfg.entity_mode == op["entity_mode"]
+    assert Settings(_env_file=None).embed_dimensions == op["embed_dim"]

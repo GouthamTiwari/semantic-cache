@@ -18,3 +18,4 @@ One line per merged task.
 - 2026-11-18 · Task 16 · README + real evaluation results; spend-file race fix; Postgres connect timeout
 - 2026-11-18 · Task 19 · v2 relation guard (time, amount, sequence, extremes, change, flipped comparisons); 'false that' negation cue
 - 2026-11-18 · Task 20 · v2 dataset: relation category, retired v1 test, fresh 272-pair test split on new topics
+- 2026-11-18 · Task 21 · v2 evaluation: fresh test FHR 1.3% at 62% recall; simulation 1 wrong answer with guards only

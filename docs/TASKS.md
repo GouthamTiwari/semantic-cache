@@ -22,3 +22,11 @@ Each task is built on its own branch `task/NN-slug`, tested, squash-merged into 
 | 16 | README | `README.md`, `eval/readme_sync.py` | 14, 15 | pitch, Mermaid diagram, 3-command quickstart, results from `reports/` only, trade-offs, what it does not do | the 90-second recruiter read |
 | 17 | RAG adapter example | `examples/regrag_adapter.py` | 08 | runs with a fake answer function; no hard dependency | shows drop-in use |
 | 18 | Docker + CI + polish | `Dockerfile`, `docker-compose.yml`, `.github/workflows/ci.yml` | all | CI green (ruff + pytest, Bedrock mocked); audit prints OK; repo topics and description set | proof it runs anywhere |
+
+## v2 (after v1 was frozen at tag v1.0.0)
+
+| # | Task | Files | Acceptance criteria | Why |
+|---|---|---|---|---|
+| 19 | Relation guard | `guards.py`, `tests/test_guard_relation.py` | v1 simulation false hits rejected; same-relation paraphrases pass | v1's remaining wrong answers were relation words |
+| 20 | v2 dataset | `eval/dataset.py`, `eval/generate.py`, `data/pairs/*` | relation pairs in dev; v1 test retired; fresh test on unseen topics; no text shared with dev or retired | a seen test split cannot test v2 |
+| 21 | v2 evaluation | `reports/*`, `README.md`, `config.py` | dev-only tuning; fresh test run once; simulation re-run; README v1 → v2 table generated; defaults equal the operating point | measure the change honestly |
