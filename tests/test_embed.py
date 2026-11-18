@@ -143,3 +143,26 @@ def test_hashing_embedder_similarity_order():
     b = e.embed("how can I reset my password").vector
     c = e.embed("what is the GST rate on gold").vector
     assert float(a @ b) > float(a @ c)
+
+
+def _add_many(path, n):
+    from semcache.budget import LiveBudget
+
+    b = LiveBudget(path, limit_usd=100)
+    for _ in range(n):
+        b.add(0.001)
+
+
+def test_budget_survives_concurrent_processes(tmp_path):
+    # Two processes adding at once once corrupted the spend file (a reader saw it half
+    # written). With the lock file and atomic replace, no update is lost.
+    import multiprocessing as mp
+
+    path = tmp_path / "spend.json"
+    procs = [mp.Process(target=_add_many, args=(path, 50)) for _ in range(2)]
+    for p in procs:
+        p.start()
+    for p in procs:
+        p.join(60)
+        assert p.exitcode == 0
+    assert LiveBudget(path, 100).spent() == pytest.approx(0.1)

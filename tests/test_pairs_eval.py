@@ -93,3 +93,11 @@ def test_svg_chart_is_well_formed():
 
     svg = svg_sweep("t", [0.7, 0.8, 0.9], [("a", [0.1, 0.5, 0.9], "#000", False)], 0.8, "x")
     xml.dom.minidom.parseString(svg)
+
+
+def test_wilson_interval():
+    from semcache.eval.pairs_eval import wilson
+
+    lo, hi = wilson(2, 93)
+    assert lo < 2 / 93 < hi
+    assert wilson(0, 50)[0] == 0.0 and wilson(0, 50)[1] > 0

@@ -43,7 +43,8 @@ class PgVectorStore:
         self.dim = int(dim)  # int() so the f-string table name can only ever hold digits
         self.table = f"semcache_entries_{self.dim}"
         self._lock = threading.Lock()
-        self._conn = psycopg.connect(dsn, autocommit=True)
+        # Fail fast when the database is down, so the cache can fail open instead of hanging.
+        self._conn = psycopg.connect(dsn, autocommit=True, connect_timeout=5)
         self._conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
         register_vector(self._conn)
         self.migrate()

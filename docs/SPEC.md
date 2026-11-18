@@ -332,3 +332,8 @@ CLI: `semcache serve`, `semcache purge --expired`, `semcache dataset generate|va
 ## 16. Non-goals for v1
 
 Distributed cache clusters; Redis or other vector backends (the `CacheStore` interface allows them later); conversational caching beyond the multi-turn rule; fine-tuned embedding models; coalescing paraphrases in flight; a web UI; real authentication; caching tool-use conversations.
+
+## 17. Notes added during the build
+
+- 2026-11-17: Titan's per-region quota (60 requests/minute) made one region too slow for all eval embeddings in one sitting. The 256-dim pair vectors were embedded in us-east-1; everything the simulation's latency depends on (1024-dim vectors, intents) was embedded in ap-south-1. A spot check gave cosine 1.000000 between the two regions for the same text. Recorded in `reports/pairs_dev.json`.
+- 2026-11-17: `current` added to the time-sensitive words (except "current account"), found by the RAG adapter demo.

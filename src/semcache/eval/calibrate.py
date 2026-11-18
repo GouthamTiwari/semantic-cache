@@ -51,7 +51,9 @@ def calibrate(upstream, model_id: str, n: int = 40, seed: int = 11) -> dict:
     return {"model_id": model_id, "system_prompt": SIM_SYSTEM, "samples": samples}
 
 
-def summarise(cal: dict, memo_path: str | Path = ".embed_cache/embeddings.sqlite") -> dict:
+def summarise(
+    cal: dict, memo_path: str | Path = ".embed_cache/embeddings.sqlite", dim: int = 1024
+) -> dict:
     s = cal["samples"]
     lat = np.array([x["latency_ms"] for x in s])
     out = {
@@ -63,7 +65,9 @@ def summarise(cal: dict, memo_path: str | Path = ".embed_cache/embeddings.sqlite
     }
     if Path(memo_path).exists():
         db = sqlite3.connect(str(memo_path))
-        emb = np.array([r[0] for r in db.execute("SELECT latency_ms FROM memo").fetchall()])
+        # Only the dimension the simulation uses; all of its calls went to ap-south-1.
+        rows = db.execute("SELECT latency_ms FROM memo WHERE dim = ?", (dim,)).fetchall()
+        emb = np.array([r[0] for r in rows])
         db.close()
         out["embed_calls_in_memo"] = int(len(emb))
         out["embed_latency_ms_p50"] = round(float(np.percentile(emb, 50)), 1)

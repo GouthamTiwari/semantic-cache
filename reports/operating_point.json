@@ -1,0 +1,15 @@
+{
+  "embed_dim": 256,
+  "t_high": 0.95,
+  "t_low": 0.95,
+  "verifier_enabled": false,
+  "guards": [
+    "numbers",
+    "dates",
+    "negation",
+    "entities"
+  ],
+  "entity_mode": "swap",
+  "fhr_target": 0.01,
+  "chosen_on": "dev split only"
+}

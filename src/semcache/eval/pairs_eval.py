@@ -140,7 +140,15 @@ def _subset(s: Scored, split: str) -> Scored:
 def run_dev(embedders: dict[int, object], verifier, pairs: list[Pair] | None = None) -> dict:
     """Experiments 1-4 on the dev split. Writes nothing; returns the results."""
     pairs = pairs if pairs is not None else load_pairs()
-    result: dict = {"fhr_target": FHR_TARGET, "dims": {}}
+    result: dict = {
+        "fhr_target": FHR_TARGET,
+        "embedding_regions": {
+            "1024": "ap-south-1",
+            "256": "us-east-1 (a second regional quota, to finish in time; a spot check gave "
+            "cosine 1.000000 against the same text embedded in ap-south-1)",
+        },
+        "dims": {},
+    }
     scored: dict[int, Scored] = {}
     for dim, emb in embedders.items():
         s = _subset(score_pairs(pairs, emb), "dev")
@@ -149,7 +157,6 @@ def run_dev(embedders: dict[int, object], verifier, pairs: list[Pair] | None = N
         with_guards = sweep(s, ALL_GUARDS)
         result["dims"][dim] = {
             "embed_cost_per_lookup_usd": s.embed_cost_per_lookup,
-            "embed_ms_p50": round(s.embed_ms_per_lookup, 1),
             "score_quantiles": {
                 lab: [round(float(q), 4) for q in np.quantile(s.scores[mask], [0.05, 0.5, 0.95])]
                 for lab, mask in (("same", s.same), ("different", ~s.same))
@@ -244,6 +251,16 @@ def run_dev(embedders: dict[int, object], verifier, pairs: list[Pair] | None = N
     return result
 
 
+def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """95 % Wilson score interval for k successes out of n (sound for small counts)."""
+    if n == 0:
+        return (0.0, 0.0)
+    p = k / n
+    centre = (p + z * z / (2 * n)) / (1 + z * z / n)
+    half = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / (1 + z * z / n)
+    return (round(max(0.0, centre - half), 4), round(min(1.0, centre + half), 4))
+
+
 def op_hash(op: dict) -> str:
     return hashlib.sha256(json.dumps(op, sort_keys=True).encode()).hexdigest()[:12]
 
@@ -266,6 +283,7 @@ def run_test(embedder, verifier, op: dict, pairs: list[Pair] | None = None) -> d
         "same": int(s.same.sum()),
         "different": int((~s.same).sum()),
         "result": m,
+        "false_hit_rate_ci95": wilson(m["fp"], m["fp"] + m["tn"]),
         "judge": info,
         "same_threshold_without_guards": {
             k: m_ng[k] for k in ("false_hit_rate", "recall", "precision", "fp")
@@ -385,7 +403,9 @@ def write_test_report(res: dict) -> None:
         f"Run once at the operating point frozen on dev (hash `{res['operating_point_hash']}`). "
         "Nothing was tuned after this run.",
         "",
-        f"Test pairs: {res['pairs']} ({res['same']} same, {res['different']} different).",
+        f"Test pairs: {res['pairs']} ({res['same']} same, {res['different']} different). "
+        f"False-hit rate 95 % interval (Wilson): {pct(res['false_hit_rate_ci95'][0])} to "
+        f"{pct(res['false_hit_rate_ci95'][1])}.",
         "",
         table(["config", "precision", "recall", "false-hit rate", "false hits"], [
             ["chosen operating point", pct(m["precision"]), pct(m["recall"]),
