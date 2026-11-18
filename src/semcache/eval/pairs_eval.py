@@ -24,7 +24,7 @@ from semcache.normalize import normalize
 FHR_TARGET = 0.01  # false-hit rate target on `different` pairs (SPEC section 11)
 THRESHOLDS = [round(0.70 + 0.01 * i, 2) for i in range(30)]  # 0.70 .. 0.99
 DIMS = (256, 1024)
-ALL_GUARDS = ("numbers", "dates", "negation", "entities")
+ALL_GUARDS = ("numbers", "dates", "negation", "entities", "relation")
 # The cheaper dimension must justify itself: chosen only if its dev recall at the target
 # is no more than this many points below the larger one's.
 DIM_RECALL_TOLERANCE = 0.02

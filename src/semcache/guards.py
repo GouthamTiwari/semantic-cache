@@ -129,7 +129,9 @@ def dates_guard(a: str, b: str) -> bool:
 
 _NEGATION_RE = re.compile(
     r"\b(?:not|no|never|cannot|without|nor|neither|none|nothing|nobody)\b|n't\b|\bcant\b|\bwont\b"
-    r"|\bdont\b|\bdoesnt\b|\bisnt\b|\barent\b|\bdidnt\b",
+    r"|\bdont\b|\bdoesnt\b|\bisnt\b|\barent\b|\bdidnt\b"
+    # v2: "Is it false that ...?" asks the opposite question (found by the v1 simulation).
+    r"|\b(?:false|untrue)\s+that\b",
     re.IGNORECASE,
 )
 
@@ -187,6 +189,112 @@ def entities_guard(a: str, b: str, mode: str = "swap") -> bool:
     return not (only_a and only_b)
 
 
+# --- relations (v2) ---------------------------------------------------------------
+# Added in v2 after the v1 traffic simulation: almost all remaining false hits were
+# relation words ("before 55" vs "after 55", "next" vs "last" Friday) or flipped
+# comparisons ("football older than cricket" vs "cricket older than football").
+
+_MONTH_START = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)"
+_DAY_OR_PERIOD = (
+    r"(?:week|month|year|quarter|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
+)
+# axis -> (patterns meaning +1, patterns meaning -1, strict). Strict axes reject any
+# difference, including a word on one side only; the others reject only a direct conflict,
+# because words like "last date" or "most" also appear in harmless paraphrases.
+_AXES: dict[str, tuple[list[str], list[str], bool]] = {
+    "time": (
+        [r"after", r"later than", r"since", r"beyond",
+         rf"following(?=\s+(?:\d|the\s+\d|{_MONTH_START}))"],
+        [r"before", r"prior to", r"earlier than", r"until", r"till", r"ahead of",
+         r"in advance of"],
+        True,
+    ),
+    "amount": (
+        [r"more than", r"greater than", r"higher than", r"above", r"exceeding", r"exceeds",
+         r"at least", r"in excess of", r"over(?=\s*(?:rs\.?|inr|₹|\$|\d))"],
+        [r"less than", r"lower than", r"fewer than", r"below", r"at most", r"up to",
+         r"under(?=\s*(?:rs\.?|inr|₹|\$|\d))"],
+        True,
+    ),
+    "sequence": (
+        [r"next", r"upcoming", rf"coming(?=\s+{_DAY_OR_PERIOD})"],
+        [r"last", r"previous", r"preceding", rf"past(?=\s+(?:\d|{_DAY_OR_PERIOD}))"],
+        False,
+    ),
+    "extreme": (
+        [r"maximum", r"max", r"highest", r"upper limit"],
+        [r"minimum", r"min", r"lowest", r"lower limit"],
+        False,
+    ),
+    "change": (
+        [r"increase[sd]?", r"raised?", r"hiked?", r"rise", r"go up"],
+        [r"decrease[sd]?", r"cut", r"reduced?", r"drop", r"go down"],
+        False,
+    ),
+}  # fmt: skip
+_AXIS_RE = {
+    axis: (
+        re.compile(r"\b(?:" + "|".join(up) + r")\b", re.IGNORECASE),
+        re.compile(r"\b(?:" + "|".join(down) + r")\b", re.IGNORECASE),
+        strict,
+    )
+    for axis, (up, down, strict) in _AXES.items()
+}
+
+# Antonym comparatives map to one canonical word with the sides swapped:
+# "A younger than B" means the same as "B older than A".
+_ANTONYM = {
+    "younger": "older", "smaller": "bigger", "larger": "bigger", "lower": "higher",
+    "slower": "faster", "costlier": "cheaper", "worse": "better", "shorter": "longer",
+    "lighter": "heavier", "later": "earlier", "less": "more", "fewer": "more",
+}  # fmt: skip
+_SWAPS_SIDES = {"younger", "smaller", "lower", "slower", "costlier", "worse", "shorter",
+                "lighter", "later", "less", "fewer"}  # fmt: skip
+_COMPARISON_RE = re.compile(
+    r"\b([a-z0-9-]+)\s+(?:is\s+|are\s+|was\s+|were\s+)?((?:more|less)\s+[a-z]+|[a-z]+er)"
+    r"\s+than\s+(?:the\s+|a\s+|an\s+)?([a-z0-9-]+)",
+    re.IGNORECASE,
+)
+
+
+def relation_signature(text: str) -> dict[str, set[int]]:
+    """Per axis, which directions the text uses: {+1}, {-1}, both, or absent."""
+    out: dict[str, set[int]] = {}
+    for axis, (up, down, _strict) in _AXIS_RE.items():
+        signs = ({1} if up.search(text) else set()) | ({-1} if down.search(text) else set())
+        if signs:
+            out[axis] = signs
+    return out
+
+
+def comparisons(text: str) -> set[tuple[str, str, str]]:
+    """(left, canonical comparative, right) for every "A <comparative> than B"."""
+    out = set()
+    for m in _COMPARISON_RE.finditer(text.lower()):
+        left, comp, right = m.group(1), m.group(2), m.group(3)
+        parts = comp.split()
+        word, rest = parts[0], " ".join(parts[1:])
+        canon = _ANTONYM.get(word, word) + (f" {rest}" if rest else "")
+        if word in _SWAPS_SIDES:
+            left, right = right, left
+        out.add((left, canon, right))
+    return out
+
+
+def relation_guard(a: str, b: str) -> bool:
+    sa, sb = relation_signature(a), relation_signature(b)
+    for axis, (_up, _down, strict) in _AXIS_RE.items():
+        x, y = sa.get(axis, set()), sb.get(axis, set())
+        if strict and x != y:
+            return False
+        if not strict and x and y and x != y:
+            return False
+    cb = comparisons(b)
+    return not any(
+        (right, comp, left) in cb and left != right for left, comp, right in comparisons(a)
+    )
+
+
 # --- registry ---------------------------------------------------------------------
 
 GUARDS: dict[str, Callable[[str, str], bool]] = {
@@ -194,6 +302,7 @@ GUARDS: dict[str, Callable[[str, str], bool]] = {
     "dates": dates_guard,
     "negation": negation_guard,
     "entities": entities_guard,
+    "relation": relation_guard,
 }
 
 

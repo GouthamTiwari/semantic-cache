@@ -16,3 +16,4 @@ One line per merged task.
 - 2026-11-17 · Task 17 · FunctionUpstream + RAG adapter example; 'current' now time-sensitive (except current account)
 - 2026-11-17 · Task 18 · Dockerfile, compose app profile, GitHub Actions CI with a pgvector service
 - 2026-11-18 · Task 16 · README + real evaluation results; spend-file race fix; Postgres connect timeout
+- 2026-11-18 · Task 19 · v2 relation guard (time, amount, sequence, extremes, change, flipped comparisons); 'false that' negation cue

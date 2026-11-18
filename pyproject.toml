@@ -46,6 +46,8 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint.per-file-ignores]
 # Prompt templates read better unwrapped.
 "src/semcache/eval/generate.py" = ["E501"]
+# Guard tests are tables of real question pairs; wrapping them hurts readability.
+"tests/test_guard_*.py" = ["E501"]
 
 [tool.ruff.format]
 exclude = ["*.md"]

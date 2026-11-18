@@ -1,0 +1,256 @@
+{
+  "model_id": "global.amazon.nova-2-lite-v1:0",
+  "system_prompt": "You are the help assistant of an Indian fintech and e-commerce app. Answer the user's question clearly in under 120 words.",
+  "samples": [
+    {
+      "latency_ms": 1651.1,
+      "input_tokens": 80,
+      "output_tokens": 110,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1313.6,
+      "input_tokens": 83,
+      "output_tokens": 110,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1381.6,
+      "input_tokens": 83,
+      "output_tokens": 125,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1498.1,
+      "input_tokens": 80,
+      "output_tokens": 108,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 889.8,
+      "input_tokens": 82,
+      "output_tokens": 99,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1298.4,
+      "input_tokens": 80,
+      "output_tokens": 96,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1333.7,
+      "input_tokens": 83,
+      "output_tokens": 126,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1231.0,
+      "input_tokens": 90,
+      "output_tokens": 101,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1481.8,
+      "input_tokens": 87,
+      "output_tokens": 101,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1103.8,
+      "input_tokens": 84,
+      "output_tokens": 97,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1442.9,
+      "input_tokens": 82,
+      "output_tokens": 91,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1768.3,
+      "input_tokens": 81,
+      "output_tokens": 108,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1192.8,
+      "input_tokens": 82,
+      "output_tokens": 170,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1377.7,
+      "input_tokens": 82,
+      "output_tokens": 103,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1226.4,
+      "input_tokens": 80,
+      "output_tokens": 94,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1462.4,
+      "input_tokens": 80,
+      "output_tokens": 106,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1015.5,
+      "input_tokens": 82,
+      "output_tokens": 96,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1177.1,
+      "input_tokens": 78,
+      "output_tokens": 95,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1364.9,
+      "input_tokens": 78,
+      "output_tokens": 115,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1920.7,
+      "input_tokens": 90,
+      "output_tokens": 136,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1321.5,
+      "input_tokens": 82,
+      "output_tokens": 99,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1244.3,
+      "input_tokens": 82,
+      "output_tokens": 95,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1623.2,
+      "input_tokens": 86,
+      "output_tokens": 114,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1459.5,
+      "input_tokens": 82,
+      "output_tokens": 97,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1545.9,
+      "input_tokens": 81,
+      "output_tokens": 115,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1330.2,
+      "input_tokens": 81,
+      "output_tokens": 111,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1186.2,
+      "input_tokens": 80,
+      "output_tokens": 93,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1303.4,
+      "input_tokens": 81,
+      "output_tokens": 132,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1208.6,
+      "input_tokens": 90,
+      "output_tokens": 93,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1325.1,
+      "input_tokens": 82,
+      "output_tokens": 102,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1392.8,
+      "input_tokens": 80,
+      "output_tokens": 96,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1485.2,
+      "input_tokens": 84,
+      "output_tokens": 115,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1130.5,
+      "input_tokens": 84,
+      "output_tokens": 85,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1161.6,
+      "input_tokens": 84,
+      "output_tokens": 96,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 1696.2,
+      "input_tokens": 87,
+      "output_tokens": 98,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 2286.2,
+      "input_tokens": 84,
+      "output_tokens": 106,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 2241.3,
+      "input_tokens": 86,
+      "output_tokens": 105,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 4556.8,
+      "input_tokens": 80,
+      "output_tokens": 86,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 2377.6,
+      "input_tokens": 84,
+      "output_tokens": 101,
+      "stop_reason": "end_turn"
+    },
+    {
+      "latency_ms": 2748.9,
+      "input_tokens": 80,
+      "output_tokens": 101,
+      "stop_reason": "end_turn"
+    }
+  ],
+  "summary": {
+    "calls": 40,
+    "upstream_latency_ms_p50": 1371.3,
+    "upstream_latency_ms_p95": 2396.2,
+    "input_tokens_mean": 82.7,
+    "output_tokens_mean": 105.7,
+    "embed_calls_in_memo": 512,
+    "embed_latency_ms_p50": 74.1,
+    "embed_latency_ms_p95": 244.6
+  }
+}
