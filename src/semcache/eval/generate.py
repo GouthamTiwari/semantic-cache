@@ -270,3 +270,138 @@ def generate_intents(client, model_id: str, budget, out_path: Path, workers: int
         "texts": sum(len(r["phrasings"]) for r in rows),
         "cost_usd": round(sum(r[4] for r in results), 6),
     }
+
+
+# --- v2 ---------------------------------------------------------------------------
+# v2 adds a "relation" category and a brand-new test set on topics v1 never used. The v1
+# test pairs were seen once, so they are retired rather than reused.
+
+TOPICS_V2_TEST: list[tuple[str, str]] = [
+    ("finance", "credit scores and CIBIL reports"),
+    ("finance", "life and health insurance claims"),
+    ("finance", "gold loans"),
+    ("finance", "senior citizen savings schemes"),
+    ("finance", "NPS pension accounts"),
+    ("finance", "sending money abroad under LRS"),
+    ("support", "food delivery orders"),
+    ("support", "train and flight ticket bookings and cancellations"),
+    ("support", "mobile recharges and data plans"),
+    ("support", "online course enrolment and certificates"),
+    ("support", "hotel bookings and check-in"),
+    ("support", "ride-hailing trips and fares"),
+    ("general", "rivers, mountains and geography"),
+    ("general", "the human body"),
+    ("general", "weather and climate"),
+    ("general", "famous books and authors"),
+]
+
+RELATION_KEYS = {
+    "relation_different": ("relation", "different", 2),
+    "relation_same": ("relation", "same", 1),
+}
+
+RELATION_RULES = """- "relation_different": 2 pairs. Same wording except one relation flips the meaning: before vs after, more than vs less than, above vs below, next vs last, maximum vs minimum, increase vs decrease, or the two sides of a comparison swapped ("Is A older than B?" vs "Is B older than A?"). The correct answer changes.
+- "relation_same": 1 pair. The same relation said in different words (for example "before" vs "prior to"), so the answer does not change."""
+
+RELATION_PROMPT = (
+    """Topic: {topic} (domain: {domain})
+
+Write short questions (4 to 20 words) about this topic, the way real users type them.
+Return a JSON object. Each key holds a list of pairs, each pair a 2-item list [a, b]:
+"""
+    + RELATION_RULES
+)
+
+PAIRS_PROMPT_V2 = PAIRS_PROMPT.replace(
+    "\n\nExamples of the style:", "\n" + RELATION_RULES + "\n\nExamples of the style:"
+)
+
+
+def _parse_v2(raw: dict, group: str, domain: str, split: str, keys: dict) -> list[Pair]:
+    out: list[Pair] = []
+    for key, (category, label, _n) in keys.items():
+        for item in raw.get(key, []) or []:
+            if not (isinstance(item, list) and len(item) == 2):
+                continue
+            a, b = (str(x).strip() for x in item)
+            if not (3 <= len(a) <= 300 and 3 <= len(b) <= 300) or normalize(a) == normalize(b):
+                continue
+            out.append(
+                Pair(
+                    id="tmp",
+                    a=a,
+                    b=b,
+                    label=label,
+                    category=category,
+                    split=split,
+                    group=group,
+                    source="generated-v2",
+                    domain=domain,
+                )  # fmt: skip
+            )
+    return out
+
+
+def generate_v2(client, model_id: str, budget, raw_path: Path, workers: int = 3) -> dict:
+    """Retire the v1 test split, add relation pairs to dev, build a fresh test split."""
+    pairs = load_pairs()
+    for p in pairs:
+        if p.split == "test":
+            p.split = "retired"  # type: ignore[assignment]
+    dev_groups = sorted({p.group for p in pairs if p.split == "dev" and p.group != "seed"})
+    examples = _examples()
+    jobs = []
+    for g in dev_groups:
+        domain, topic = TOPICS[int(g[1:])]
+        jobs.append((g, domain, "dev", RELATION_PROMPT.format(topic=topic, domain=domain),
+                     RELATION_KEYS, topic))  # fmt: skip
+    for i, (domain, topic) in enumerate(TOPICS_V2_TEST):
+        prompt = PAIRS_PROMPT_V2.format(topic=topic, domain=domain, examples=examples)
+        jobs.append((f"n{i:02d}", domain, "test", prompt, {**PAIR_KEYS, **RELATION_KEYS}, topic))
+
+    def one(job):
+        group, domain, split, prompt, keys, topic = job
+        text, cost = "", 0.0
+        for _attempt in range(2):
+            text, c = _call(client, model_id, prompt, budget)
+            cost += c
+            try:
+                return job, _extract_json(text), text, cost
+            except (ValueError, json.JSONDecodeError):
+                continue
+        return job, {}, text, cost
+
+    with ThreadPoolExecutor(workers) as pool:
+        results = list(pool.map(one, jobs))
+    with open(raw_path, "w", encoding="utf-8", newline="\n") as f:
+        for (group, _d, split, _p, _k, topic), _raw, text, _c in results:
+            f.write(json.dumps({"group": group, "split": split, "topic": topic,
+                                "output": text}) + "\n")  # fmt: skip
+
+    seen = {pair_signature(p.a, p.b) for p in pairs}
+    used = {normalize(t) for p in pairs for t in (p.a, p.b)}  # dev + retired texts
+    next_id = max(int(p.id[1:]) for p in pairs if p.id.startswith("p")) + 1
+    added = {"dev": 0, "test": 0}
+    dropped_overlap = 0
+    for (group, domain, split, _p, keys, _t), raw, _text, _c in results:
+        for p in _parse_v2(raw, group, domain, split, keys):
+            sig = pair_signature(p.a, p.b)
+            if sig in seen:
+                continue
+            if split == "test" and ({normalize(p.a), normalize(p.b)} & used):
+                dropped_overlap += 1  # a test question must be unseen
+                continue
+            seen.add(sig)
+            p.id = f"p{next_id:04d}"
+            next_id += 1
+            pairs.append(p)
+            added[split] += 1
+            if split == "dev":
+                used.update({normalize(p.a), normalize(p.b)})
+    save_pairs(pairs)
+    return {
+        "added": added,
+        "dropped_test_overlap": dropped_overlap,
+        "calls": len(results),
+        "cost_usd": round(sum(r[3] for r in results), 6),
+    }

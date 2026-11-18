@@ -24,8 +24,10 @@ def test_committed_dataset_is_valid():
     assert 0.40 <= same <= 0.60
     assert {p.category for p in pairs} == {
         "paraphrase", "near_miss_number", "negation", "entity_swap",
-        "same_topic_different_question",
+        "same_topic_different_question", "relation",
     }  # fmt: skip
+    # v2: the v1 test split is retired, and the new test split shares no text with it.
+    assert {p.split for p in pairs} == {"dev", "test", "retired"}
 
 
 def test_validate_catches_leakage_and_duplicates():
@@ -35,12 +37,15 @@ def test_validate_catches_leakage_and_duplicates():
         pair("3", "KYC meaning?", "What is KYC?", group="g1"),  # duplicate of 1
         pair("4", "Same text", "same text?", group="g1"),  # a == b after normalising
         pair("5", "x is y", "y is x", label="different", group="g1"),  # paraphrase must be same
+        pair("6", "Old test question?", "Old test b", group="g3", split="retired"),
+        pair("7", "old test question", "New b", group="g4", split="test"),  # reuses retired
     ]
     problems = " | ".join(validate(pairs))
     assert "text in both splits" in problems
     assert "duplicate of 1" in problems
     assert "same question" in problems
     assert "paraphrase pairs must be labelled same" in problems
+    assert "'old test question'" in problems
 
 
 def test_split_is_stable_and_by_group():

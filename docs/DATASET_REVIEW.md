@@ -8,7 +8,18 @@ Every generated pair was read once by the AI coding assistant used to build this
 - Common generator mistakes: yes/no inversions labelled `same` ("allowed?" vs "prohibited?"), wrong unit maths ("Rs 10 lakh" vs "Rs 100000"), garbled questions.
 - Known weakness left in: many `entity_swap / same` pairs use the same pattern ("RBI" vs "Reserve Bank of India"), including some unrealistic questions ("contact RBI for account deletion"). Their labels are still correct.
 
-## Pass 2: human spot check (pending)
-`semcache dataset review-sample` wrote a random 10 % sample (59 pairs) to `data/pairs/review_sample.csv`. The owner fills `reviewer_label` (`same`, `different` or `drop`) and `reviewer_note`, then runs `semcache dataset apply-review`. Changes will be listed here.
+## Pass 2: v2 data and assistant review (2026-11-18)
+v2 (`semcache dataset generate-v2`, raw output in `data/pairs/generated_raw_v2.jsonl`) did three things:
+- **Retired the v1 test split** (173 pairs, `split = "retired"`). It was evaluated once in v1, so it is never used again; the new test split may not share any question with it.
+- **Added a `relation` category to dev**: 3 pairs for each of the 28 dev topics (before/after, more/less, next/last, maximum/minimum, increase/decrease, flipped comparisons, plus hard-same pairs such as "before" vs "prior to").
+- **Built a fresh test split on 16 topics v1 never used** (credit scores, insurance claims, gold loans, train and flight bookings, rivers and mountains, ...), all six categories.
+
+Every one of the 370 new pairs was read. Result: 992 → 971 pairs; 8 labels flipped to `same`, 3 to `different`, 21 dropped. Each change and its reason is in `data/pairs/review_fixes_v2.json`.
+- New convention: an "or" question in either order ("before or after" vs "after or before") is the same question.
+- Pairs where both questions carry the same information ("Was A before or after B?" vs "Was B before or after A?") were dropped as ambiguous.
+- Known bias: the generator prompt gives "before" vs "prior to" as an example of a same relation, and the relation guard knows that synonym; hard-same relation pairs may therefore be easier for the guard than real traffic.
+
+## Pass 3: human spot check (pending)
+`semcache dataset review-sample` writes a random 10 % sample of the generated pairs (v1 and v2) to `data/pairs/review_sample.csv`. The owner fills `reviewer_label` (`same`, `different` or `drop`) and `reviewer_note`, then runs `semcache dataset apply-review`. Changes will be listed here.
 
 Until pass 2 is done, the README states that labels were reviewed by the assistant only.

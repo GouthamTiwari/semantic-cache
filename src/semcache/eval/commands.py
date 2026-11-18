@@ -22,6 +22,19 @@ def cmd_dataset(args) -> int:
             Path("data/pairs/generated_raw.jsonl"),
         )
         print(json.dumps(info, indent=2))
+    if args.action == "generate-v2":
+        from semcache.config import get_settings
+        from semcache.eval.generate import generate_v2
+        from semcache.eval.runtime import budget, live_client
+
+        s = get_settings()
+        info = generate_v2(
+            live_client(s),
+            s.bedrock_chat_model_id,
+            budget(s),
+            Path("data/pairs/generated_raw_v2.jsonl"),
+        )
+        print(json.dumps(info, indent=2))
     pairs = ds.load_pairs()
     if args.action == "review-sample":
         n = ds.write_review_sample(pairs, "data/pairs/review_sample.csv")
@@ -215,7 +228,9 @@ def register(sub) -> None:
     p.set_defaults(func=cmd_test)
 
     p = sub.add_parser("dataset", help="build, check and review the labelled pair dataset")
-    p.add_argument("action", choices=["generate", "validate", "review-sample", "apply-review"])
+    p.add_argument(
+        "action", choices=["generate", "generate-v2", "validate", "review-sample", "apply-review"]
+    )
     p.set_defaults(func=cmd_dataset)
 
     p = sub.add_parser("intents", help="generate intent families for the traffic simulation")

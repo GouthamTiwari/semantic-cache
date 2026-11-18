@@ -21,6 +21,7 @@ CATEGORIES = (
     "negation",
     "entity_swap",
     "same_topic_different_question",
+    "relation",  # v2: before/after, more/less, next/last, flipped comparisons
 )
 TRAP_CATEGORIES = CATEGORIES[1:]
 DEV_SHARE = 0.7
@@ -40,8 +41,10 @@ class Pair(BaseModel):
         "negation",
         "entity_swap",
         "same_topic_different_question",
+        "relation",
     ]
-    split: Literal["dev", "test"]
+    # "retired": the v1 test split. It was seen once, so v2 never uses it again.
+    split: Literal["dev", "test", "retired"]
     group: str = "seed"
     source: str = "seed"
     domain: str = "mixed"
@@ -89,12 +92,13 @@ def validate(pairs: list[Pair]) -> list[str]:
         if p.category == "paraphrase" and p.label != "same":
             problems.append(f"{p.id}: paraphrase pairs must be labelled same")
     # Leakage: no question may appear in both splits, and a group lives in one split only.
-    texts = {"dev": set(), "test": set()}
+    texts: dict[str, set[str]] = {"dev": set(), "test": set(), "retired": set()}
     group_split: dict[str, set[str]] = {}
     for p in pairs:
         texts[p.split].update({normalize(p.a), normalize(p.b)})
         group_split.setdefault(p.group, set()).add(p.split)
-    shared = texts["dev"] & texts["test"]
+    # The test split must be unseen: nothing from dev or from the retired v1 test.
+    shared = (texts["dev"] | texts["retired"]) & texts["test"]
     problems += [f"text in both splits: {t!r}" for t in sorted(shared)]
     problems += [f"group {g} spans both splits" for g, s in group_split.items() if len(s) > 1]
     return problems
