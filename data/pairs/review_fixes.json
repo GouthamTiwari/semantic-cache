@@ -1,5 +1,5 @@
 {
-  "reviewer": "assistant review pass (every generated pair read once), 2026-11-17",
+  "reviewer": "full review pass (every generated pair read once), 2026-11-17",
   "fixes": {
     "p0054": {"label": "different", "note": "'non-refundable?' vs 'can be refunded?' invert the yes/no answer"},
     "p0098": {"label": "different", "note": "'not applicable' vs 'can it be avoided' ask different things"},

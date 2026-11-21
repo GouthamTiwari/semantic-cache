@@ -322,7 +322,7 @@ CLI: `semcache serve`, `semcache purge --expired`, `semcache dataset generate|va
 
 1. **Nova 2 Lite instead of a Claude Haiku model** (section 2): account billing limitation. Same class of model; Claude is a one-line config change.
 2. **Postgres on port 5434**, not 5433: 5433 is already used by the Regulatory RAG database on this machine.
-3. **Git identity uses the GitHub noreply address** (`227244284+GouthamTiwari@users.noreply.github.com`) chosen by the owner for all public repos, instead of the personal email in the kit; the hooks check that address.
+3. **Git identity uses the GitHub noreply address** (`227244284+GouthamTiwari@users.noreply.github.com`) for every commit, so no personal email appears in the history.
 4. **Trap categories also contain "hard same" pairs** (section 12.1), so guard false rejections are measured, not hidden.
 5. **Policy lives in `policy.py`**, separate from `normalize.py` (one job per module).
 6. The simulation's latency is **accounted, not slept**: component latencies come from calibration and real search timings, so a 5,000-request run takes seconds and is repeatable.

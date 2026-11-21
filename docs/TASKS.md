@@ -4,7 +4,7 @@ Each task is built on its own branch `task/NN-slug`, tested, squash-merged into 
 
 | # | Task | Files | Deps | Acceptance criteria | Why |
 |---|---|---|---|---|---|
-| 01 | Repo setup | `pyproject.toml`, `uv.lock`, `.gitignore`, `.env.example`, `LICENSE`, `README.md` (skeleton), `docker-compose.yml`, `docker/init.sql`, `CLAUDE.md`, `.githooks/` | none | `uv run pytest` runs; `uv run ruff check` clean; hooks active (`git config core.hooksPath` = `.githooks`); `.env` ignored; MIT licence holder Goutham Tiwari | everything else builds on it |
+| 01 | Repo setup | `pyproject.toml`, `uv.lock`, `.gitignore`, `.env.example`, `LICENSE`, `README.md` (skeleton), `docker-compose.yml`, `docker/init.sql` | none | `uv run pytest` runs; `uv run ruff check` clean; `.env` ignored; MIT licence holder Goutham Tiwari | everything else builds on it |
 | 02 | Config + domain types | `config.py`, `types.py`, `pricing.py` | 01 | settings load from `.env`; both-auth error; TTL classes; cost of a known call matches hand maths; unknown model raises | one source of truth for settings and shapes |
 | 03 | Scope, normalisation, policy | `scope.py`, `normalize.py`, `policy.py` | 02 | each policy rule P1–P6 has a test; scope changes when any field changes; normalisation keeps numbers and negations | the cheapest safety: never look in the wrong place |
 | 04 | Embedder + disk memo | `embed.py`, `bedrock.py` | 02 | Titan request body correct (mocked client); memo returns the same vector without a second call; pacing works with a fake clock; budget guard blocks overspend | eval never pays twice |

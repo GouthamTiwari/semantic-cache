@@ -18,9 +18,6 @@ dist/
 data/raw/
 .embed_cache/
 
-# the original project kit (private notes, kept locally for reference)
-_kit/
-
 # os / editor
 .DS_Store
 Thumbs.db

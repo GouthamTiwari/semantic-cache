@@ -1,5 +1,5 @@
 {
-  "reviewer": "assistant review pass of every v2 pair (82 dev relation pairs, 288 new test pairs), 2026-11-18",
+  "reviewer": "full review pass of every v2 pair (82 dev relation pairs, 288 new test pairs), 2026-11-18",
   "fixes": {
     "p0634": {"label": "same", "note": "'more than or less than' vs 'less than or more than' is the same question"},
     "p0637": {"label": "same", "note": "'before or after' vs 'after or before' is the same question"},
